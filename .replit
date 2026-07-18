@@ -1,5 +1,30 @@
+modules = ["python-3.11"]
 [nix]
 channel = "stable-25_05"
+packages = ["libcxx"]
 
 [agent]
 expertMode = true
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Run Optimizer"
+
+[[workflows.workflow]]
+name = "Run Optimizer"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python optimizer.py"
+
+[workflows.workflow.metadata]
+outputType = "console"
