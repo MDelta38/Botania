@@ -216,10 +216,16 @@ def warmup():
 
 
 def print_grid(genome):
-    """Print the central 15x15 crop of the best genome."""
-    g = genome.reshape((25, 25))[5:20, 5:20]
-    for row in g:
-        print("".join("█" if c else "·" for c in row))
+    """Print the full 25x25 grid with the center 3x3 marked as [F] for the flower."""
+    g = genome.reshape((25, 25))
+    for i, row in enumerate(g):
+        line = ""
+        for j, c in enumerate(row):
+            if 11 <= i <= 13 and 11 <= j <= 13:
+                line += "F"   # flower / kill zone
+            else:
+                line += "█" if c else "·"
+        print(line)
 
 
 def run():
@@ -228,12 +234,18 @@ def run():
     global_best_score  = -float('inf')
     global_best_genome = None
 
+    # Also track the fewest-cell pattern that still hits max mana separately.
+    # Score keeps climbing as cells drop while mana stays at cap, so we surface this explicitly.
+    best_maxmana_cells  = float('inf')
+    best_maxmana_genome = None
+
     print(f"🚀 Island GA | {NUM_ISLANDS} islands × {POP_PER_ISLAND} pop | Penalty: -{CELL_PENALTY}/cell | Max mana: {MAX_MANA}", flush=True)
-    print(f"   Mana formula: generation × {MANA_PER_GEN} (matches SubTileDandelifeon.java)\n", flush=True)
+    print(f"   Mana formula: generation × {MANA_PER_GEN} (matches SubTileDandelifeon.java)", flush=True)
+    print(f"   Goal: find the FEWEST starting cells that still produce {MAX_MANA} mana\n", flush=True)
 
     with mp.Pool(processes=PROCESSES, maxtasksperchild=100) as pool:
         for epoch in range(EPOCHS):
-            start = time.perf_counter()
+            epoch_start = time.perf_counter()
 
             for island in islands:
                 island.evolve_epoch(pool)
@@ -242,17 +254,18 @@ def run():
                     global_best_genome = island.best_genome.copy()
                     mana, gen = simulate(global_best_genome)
                     cells = int(np.sum(global_best_genome))
-                    print(f"\n🏆 NEW BEST: Mana={mana}, Cells={cells}, Gen={gen} (Score={global_best_score:.0f})", flush=True)
-                    if mana >= MAX_MANA:
-                        print("🎉 MAX MANA (50,000) ACHIEVED!")
-                        pool.terminate()
-                        return global_best_genome
+                    print(f"\n🏆 NEW BEST SCORE: Mana={mana}, Cells={cells}, Gen={gen} (Score={global_best_score:.0f})", flush=True)
+
+                    if mana >= MAX_MANA and cells < best_maxmana_cells:
+                        best_maxmana_cells  = cells
+                        best_maxmana_genome = global_best_genome.copy()
+                        print(f"   ✨ New fewest-cell max-mana record: {cells} cells!", flush=True)
 
             # Ring migration: best of island i → worst slot of island i+1
             for i in range(NUM_ISLANDS):
-                neighbor  = (i + 1) % NUM_ISLANDS
-                sorted_i  = sorted(range(POP_PER_ISLAND), key=lambda idx: islands[i].fitness_values[idx], reverse=True)
-                sorted_n  = sorted(range(POP_PER_ISLAND), key=lambda idx: islands[neighbor].fitness_values[idx])
+                neighbor = (i + 1) % NUM_ISLANDS
+                sorted_i = sorted(range(POP_PER_ISLAND), key=lambda idx: islands[i].fitness_values[idx], reverse=True)
+                sorted_n = sorted(range(POP_PER_ISLAND), key=lambda idx: islands[neighbor].fitness_values[idx])
                 islands[neighbor].population[sorted_n[0]] = islands[i].population[sorted_i[0]].copy()
 
             if epoch % 10 == 0:
@@ -261,10 +274,12 @@ def run():
                     cells = int(np.sum(global_best_genome))
                 else:
                     mana, gen, cells = 0, 0, 0
-                elapsed = time.perf_counter() - start
-                print(f"Epoch {epoch:>4}: Best Mana={mana:>6}, Cells={cells:>3}, Gen={gen:>6} ({elapsed:.1f}s/epoch)", flush=True)
+                elapsed = time.perf_counter() - epoch_start
+                rec = f" | ✨ MaxMana record: {best_maxmana_cells} cells" if best_maxmana_genome is not None else ""
+                print(f"Epoch {epoch:>4}: Best Mana={mana:>6}, Cells={cells:>3}, Gen={gen:>6} ({elapsed:.1f}s/epoch){rec}", flush=True)
 
-    return global_best_genome
+    # Return the most cell-efficient max-mana pattern if found, else highest-scoring overall
+    return best_maxmana_genome if best_maxmana_genome is not None else global_best_genome
 
 
 if __name__ == "__main__":
@@ -279,6 +294,6 @@ if __name__ == "__main__":
         print(f"   Cells      : {cells}")
         print(f"   Generations: {gen}")
         print(f"   Efficiency : {mana / cells:.1f} mana/cell")
-        print("\nGrid (central 15×15):")
+        print("\nFull 25×25 grid (F = flower kill zone, █ = starting cell, · = empty):")
         print_grid(best)
     print(f"\nRuntime: {(time.perf_counter() - start) / 60:.2f} minutes")
