@@ -85,14 +85,18 @@ def simulate(grid_flat):
         if mana > 0:
             return min(mana, MAX_MANA), gen + 1
 
-        # Natural early exit (pattern dead or stuck)
+        # Count live cells in new_grid for early exit checks
         total = 0
         for i in range(25):
             for j in range(25):
                 total += new_grid[i, j]
-        if gen > 2000 and total == 0:
+
+        # Exit immediately if the grid is completely dead — no point simulating empty space
+        if total == 0:
             return 0, gen
-        if gen > 5000 and total < 4:
+
+        # Exit early if pattern is tiny and stuck (likely a still life with no path to center)
+        if gen > 500 and total < 4:
             return 0, gen
 
         grid = new_grid
