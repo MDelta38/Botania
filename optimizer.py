@@ -105,16 +105,33 @@ def simulate(grid_flat):
 # LAYER 2: GENETIC OPERATORS
 # -------------------------------------------------------------------
 def create_random():
-    """Random genome biased toward low density (fewer starting cells = lower penalty)."""
-    bits = np.zeros(625, dtype=np.int8)
-    num_cells = random.randint(5, 80)
-    positions = random.sample(range(625), num_cells)
-    for pos in positions:
-        row = pos // 25
-        col = pos % 25
-        if not (11 <= row <= 13 and 11 <= col <= 13):  # keep center clear
-            bits[pos] = 1
-    return bits
+    """
+    Cluster-based seeding: place cells in small blobs around random anchors.
+    Isolated single cells die on tick 1 (0 neighbours → Game of Life death rule),
+    so we ensure every starting cell has at least one neighbour by construction.
+    """
+    bits = np.zeros((25, 25), dtype=np.int8)
+    num_clusters = random.randint(2, 10)
+
+    for _ in range(num_clusters):
+        # Pick a random anchor away from the center kill zone
+        while True:
+            ar = random.randint(1, 23)
+            ac = random.randint(1, 23)
+            if not (11 <= ar <= 13 and 11 <= ac <= 13):
+                break
+
+        # Place 2–6 cells in a tight radius around the anchor
+        cluster_size = random.randint(2, 6)
+        for _ in range(cluster_size):
+            for _attempt in range(10):
+                r = ar + random.randint(-2, 2)
+                c = ac + random.randint(-2, 2)
+                if 0 <= r < 25 and 0 <= c < 25 and not (11 <= r <= 13 and 11 <= c <= 13):
+                    bits[r, c] = 1
+                    break
+
+    return bits.flatten()
 
 
 def crossover_2d(p1, p2):
@@ -133,24 +150,45 @@ def crossover_2d(p1, p2):
 
 
 def mutate(genome):
-    """Bit-flips + block rotations."""
-    g = genome.copy()
-    for idx in range(625):
-        if random.random() < 0.005:
-            g[idx] = 1 - g[idx]
+    """
+    Three mutation types:
+    1. Bit-flips  — low rate random toggles (explore new positions).
+    2. Nudge      — move an existing live cell to an adjacent slot (preserves local
+                    density so cells keep their neighbours instead of scattering).
+    3. Block rotation — rearranges a rectangular patch without changing cell count.
+    """
+    g = genome.copy().reshape((25, 25))
+
+    # 1. Bit-flips (low rate to avoid scattering clusters into singletons)
+    for i in range(25):
+        for j in range(25):
+            if random.random() < 0.003:
+                if not (11 <= i <= 13 and 11 <= j <= 13):
+                    g[i, j] = 1 - g[i, j]
+
+    # 2. Nudge: pick a live cell and slide it one step in a random direction
+    if random.random() < 0.4:
+        live_cells = [(i, j) for i in range(25) for j in range(25) if g[i, j] == 1]
+        if live_cells:
+            r, c = random.choice(live_cells)
+            dr, dc = random.choice([(-1,0),(1,0),(0,-1),(0,1),(-1,-1),(-1,1),(1,-1),(1,1)])
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < 25 and 0 <= nc < 25 and not (11 <= nr <= 13 and 11 <= nc <= 13):
+                g[r, c] = 0
+                g[nr, nc] = 1
+
+    # 3. Block rotation
     if random.random() < 0.05:
-        g_2d = g.reshape((25, 25))
         size = random.randint(3, 7)
         x = random.randint(0, 25 - size)
         y = random.randint(0, 25 - size)
-        g_2d[x:x + size, y:y + size] = np.rot90(
-            g_2d[x:x + size, y:y + size], k=random.randint(1, 3)
+        g[x:x + size, y:y + size] = np.rot90(
+            g[x:x + size, y:y + size], k=random.randint(1, 3)
         )
-        g = g_2d.flatten()
-    for i in range(11, 14):
-        for j in range(11, 14):
-            g[i * 25 + j] = 0
-    return g
+
+    # Always clear the center kill zone
+    g[11:14, 11:14] = 0
+    return g.flatten()
 
 
 # -------------------------------------------------------------------
