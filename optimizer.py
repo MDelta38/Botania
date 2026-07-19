@@ -13,7 +13,7 @@ NUM_ISLANDS = 8         # More islands = more diversity; one per 4 threads is a 
 POP_PER_ISLAND = 200    # Larger population per island to fill those cores
 GENERATIONS_PER_EPOCH = 25
 EPOCHS = 500
-SIM_MAX_GEN = 20000
+SIM_MAX_GEN = 500      # Gen>60 rule kills all old cells; useful patterns fire within ~200 ticks
 CELL_PENALTY = 100      # Each starting cell costs 100 mana worth of fitness.
 
 # Mana constants from actual Botania source (SubTileDandelifeon.java):
@@ -30,11 +30,18 @@ def simulate(grid_flat):
     """
     Runs the Dandelifeon simulation on a 25x25 grid.
 
-    Mana is earned when a live cell enters the center 3x3 (rows 11-13, cols 11-13):
-      - If the cell's generation > 1: mana += generation * 150
-      - If generation == 1: cell dies silently (no mana), matching the game's
-        `gen == 1 ? -1 : -2` branch in setBlockForGeneration().
-    Total mana is capped at 50,000 (the flower's max pool).
+    Rules (all sourced from SubTileDandelifeon.java):
+      - Standard Conway's GoL survival/birth on the full 25x25 grid.
+      - Generation tracking: survivors age by +1 each tick; newborns inherit
+        (max neighbour generation + 1).
+      - Gen > 60 death: any cell outside the center 3x3 whose generation would
+        exceed 60 is forcibly destroyed (setBlockForGeneration, line 145).
+        This caps useful cell age at ~61 ticks — patterns relying on gen 183+
+        are impossible in-game.
+      - Absorption: cells that enter the center 3x3 (rows/cols 11-13) are wiped.
+        If generation > 1: mana += generation * 150.
+        If generation == 1: silent death, no mana (gen==1 ? -1 : -2 branch).
+      - Total mana capped at 50,000.
 
     Returns (mana_earned, game_tick_when_absorbed).
     Returns (0, SIM_MAX_GEN) if nothing is ever absorbed.
@@ -69,6 +76,18 @@ def simulate(grid_flat):
                         new_grid[i, j] = 1
                         new_age[i, j]  = max_age + 1  # inherits highest neighbour gen
 
+        # --- Gen > 60 death rule (SubTileDandelifeon.setBlockForGeneration line 145) ---
+        # Any cell outside the center 3x3 that has aged past generation 60 is forcibly
+        # removed.  Our simulator was missing this entirely, which let cells reach gen 183+
+        # — impossible in-game.  Cap is 60 outside the kill zone; center cells are handled
+        # separately below (they get absorbed before this rule would kill them).
+        for i in range(25):
+            for j in range(25):
+                if new_grid[i, j] == 1 and new_age[i, j] > 60:
+                    if not (11 <= i <= 13 and 11 <= j <= 13):
+                        new_grid[i, j] = 0
+                        new_age[i, j]  = 0
+
         # --- Absorption: cells that landed in the center 3x3 ---
         # Matches game logic: gen==1 → silent death (-1), gen>1 → absorbed (-2, earns mana)
         mana = 0
@@ -95,8 +114,8 @@ def simulate(grid_flat):
         if total == 0:
             return 0, gen
 
-        # Exit early if pattern is tiny and stuck (likely a still life with no path to center)
-        if gen > 500 and total < 4:
+        # Exit early if pattern is tiny and stuck (still life / oscillator, no path to center)
+        if gen > 150 and total < 4:
             return 0, gen
 
         grid = new_grid
@@ -110,18 +129,32 @@ def simulate(grid_flat):
 # -------------------------------------------------------------------
 def create_random():
     """
-    Cluster-based seeding: place cells in small blobs around random anchors.
-    Isolated single cells die on tick 1 (0 neighbours → Game of Life death rule),
-    so we ensure every starting cell has at least one neighbour by construction.
+    Cluster-based seeding biased toward the outer ring of the grid.
+
+    Under the gen>60 death rule, cells need DISTANCE from the center to accumulate
+    generation count before they arrive.  A glider from corner (0,0) takes ~48 ticks
+    to reach center (12,12) — well within the 60-gen budget.  Anchors placed near the
+    center have too little time to age and arrive with gen 1-2, earning nearly nothing.
+
+    Strategy: 70% chance each anchor is placed in the outer 6-cell border; 30% anywhere.
+    Isolated single cells still die on tick 1, so clusters of 2-6 are enforced.
     """
     bits = np.zeros((25, 25), dtype=np.int8)
-    num_clusters = random.randint(2, 10)
+    num_clusters = random.randint(2, 8)
 
     for _ in range(num_clusters):
-        # Pick a random anchor away from the center kill zone
-        while True:
-            ar = random.randint(1, 23)
-            ac = random.randint(1, 23)
+        for _attempt in range(20):
+            if random.random() < 0.7:
+                # Outer border: rows/cols 0-5 or 19-24
+                if random.random() < 0.5:
+                    ar = random.choice(list(range(0, 6)) + list(range(19, 25)))
+                    ac = random.randint(0, 24)
+                else:
+                    ar = random.randint(0, 24)
+                    ac = random.choice(list(range(0, 6)) + list(range(19, 25)))
+            else:
+                ar = random.randint(0, 24)
+                ac = random.randint(0, 24)
             if not (11 <= ar <= 13 and 11 <= ac <= 13):
                 break
 
@@ -283,6 +316,8 @@ def run():
 
     print(f"🚀 Island GA | {NUM_ISLANDS} islands × {POP_PER_ISLAND} pop | Penalty: -{CELL_PENALTY}/cell | Max mana: {MAX_MANA}", flush=True)
     print(f"   Mana formula: generation × {MANA_PER_GEN} (matches SubTileDandelifeon.java)", flush=True)
+    print(f"   Gen>60 death rule active — cells outside center 3×3 are wiped at gen 61+", flush=True)
+    print(f"   Max single-cell mana: 61 × {MANA_PER_GEN} = {61*MANA_PER_GEN}  → need ~{-(-MAX_MANA//(61*MANA_PER_GEN))} cells at max gen to hit {MAX_MANA}", flush=True)
     print(f"   Goal: find the FEWEST starting cells that still produce {MAX_MANA} mana\n", flush=True)
 
     with mp.Pool(processes=PROCESSES, maxtasksperchild=100) as pool:
