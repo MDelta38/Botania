@@ -1,0 +1,19 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
+package com.emoniph.witchery.brewing.potions;
+
+import com.emoniph.witchery.brewing.potions.PotionBase;
+
+public class PotionQueasy
+extends PotionBase {
+    public PotionQueasy(int id, int color) {
+        super(id, true, color);
+    }
+
+    @Override
+    public void postContructInitialize() {
+        this.setIncurable();
+    }
+}
+

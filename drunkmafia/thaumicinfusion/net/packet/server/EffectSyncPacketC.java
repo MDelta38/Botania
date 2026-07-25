@@ -1,0 +1,92 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  cpw.mods.fml.common.network.simpleimpl.IMessage
+ *  cpw.mods.fml.common.network.simpleimpl.IMessageHandler
+ *  cpw.mods.fml.common.network.simpleimpl.MessageContext
+ *  io.netty.buffer.ByteBuf
+ *  net.minecraft.client.Minecraft
+ *  net.minecraft.nbt.NBTTagCompound
+ *  net.minecraft.network.PacketBuffer
+ *  net.minecraft.world.World
+ *  thaumcraft.api.WorldCoordinates
+ */
+package drunkmafia.thaumicinfusion.net.packet.server;
+
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
+import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
+import cpw.mods.fml.common.network.simpleimpl.MessageContext;
+import drunkmafia.thaumicinfusion.common.aspect.AspectEffect;
+import drunkmafia.thaumicinfusion.common.world.SavableHelper;
+import drunkmafia.thaumicinfusion.common.world.TIWorldData;
+import drunkmafia.thaumicinfusion.common.world.data.BlockData;
+import drunkmafia.thaumicinfusion.net.ChannelHandler;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.client.Minecraft;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.world.World;
+import thaumcraft.api.WorldCoordinates;
+
+public class EffectSyncPacketC
+implements IMessage {
+    private boolean updateRendering;
+    private AspectEffect effect;
+    private NBTTagCompound tagCompound;
+
+    public EffectSyncPacketC() {
+    }
+
+    public EffectSyncPacketC(AspectEffect effect, boolean updateRendering) {
+        this.effect = effect;
+        this.updateRendering = updateRendering;
+    }
+
+    public void fromBytes(ByteBuf buf) {
+        try {
+            NBTTagCompound tag = new PacketBuffer(buf).func_150793_b();
+            if (tag != null) {
+                this.tagCompound = tag;
+                this.effect = (AspectEffect)SavableHelper.loadDataFromNBT(tag);
+                this.updateRendering = buf.readByte() == 1;
+            }
+        }
+        catch (Exception exception) {
+            // empty catch block
+        }
+    }
+
+    public void toBytes(ByteBuf buf) {
+        try {
+            if (this.effect != null) {
+                new PacketBuffer(buf).func_150786_a(SavableHelper.saveDataToNBT(this.effect));
+                buf.writeByte(this.updateRendering ? 1 : 0);
+            }
+        }
+        catch (Exception exception) {
+            // empty catch block
+        }
+    }
+
+    public static class Handler
+    implements IMessageHandler<EffectSyncPacketC, IMessage> {
+        public IMessage onMessage(EffectSyncPacketC message, MessageContext ctx) {
+            AspectEffect effect = message.effect;
+            if (effect == null || ctx.side.isServer()) {
+                return null;
+            }
+            World world = ChannelHandler.getClientWorld();
+            WorldCoordinates pos = effect.getPos();
+            BlockData data = TIWorldData.getWorldData(world).getBlock(BlockData.class, effect.getPos());
+            if (data != null && data.getEffect(effect.getClass()) != null) {
+                ((AspectEffect)data.getEffect(effect.getClass())).readNBT(message.tagCompound);
+            }
+            if (message.updateRendering) {
+                Minecraft.func_71410_x().field_71438_f.func_147586_a(pos.x, pos.y, pos.z);
+            }
+            return null;
+        }
+    }
+}
+

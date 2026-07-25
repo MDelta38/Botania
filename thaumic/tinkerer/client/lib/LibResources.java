@@ -1,0 +1,86 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
+package thaumic.tinkerer.client.lib;
+
+public final class LibResources {
+    public static final String PREFIX_MOD = "ttinkerer:";
+    public static final String PREFIX_LANG = "/assets/ttinkerer/lang/";
+    public static final String PREFIX_GUI = "ttinkerer:textures/gui/";
+    public static final String PREFIX_MISC = "ttinkerer:textures/misc/";
+    public static final String PREFIX_MODEL = "ttinkerer:textures/model/";
+    public static final String PREFIX_ENCHANTS = "ttinkerer:textures/enchants/";
+    public static final String EMTPY_TEXTURE = "emptyTexture";
+    public static final String GUI_ANIMATION_TABLET = "ttinkerer:textures/gui/animationTablet.png";
+    public static final String GUI_MOB_MAGNET = "ttinkerer:textures/gui/mobMagnet.png";
+    public static final String GUI_ENCHANTER = "ttinkerer:textures/gui/enchanter.png";
+    public static final String GUI_ASPECT_ANALYZER = "ttinkerer:textures/gui/aspectAnalyzer.png";
+    public static final String GUI_SOUL_HEARTS = "ttinkerer:textures/gui/soulHearts.png";
+    public static final String GUI_ICHOR_POUCH = "ttinkerer:textures/gui/ichorPouch.png";
+    public static final String GUI_WARP_GATE = "ttinkerer:textures/gui/warpGate.png";
+    public static final String GUI_REMOTE_PLACER = "ttinkerer:textures/gui/remotePlacer.png";
+    public static final String MISC_R_ENCHANTING = "ttinkerer:textures/misc/r_enchanting.png";
+    public static final String MISC_AT_CENTER = "ttinkerer:textures/misc/atCenter.png";
+    public static final String MISC_AT_LEFT = "ttinkerer:textures/misc/atLeft.png";
+    public static final String MISC_AT_RIGHT = "ttinkerer:textures/misc/atRight.png";
+    public static final String MISC_AT_INDENT = "ttinkerer:textures/misc/atFacingIndent.png";
+    public static final String MISC_REPAIR = "ttinkerer:textures/misc/repair.png";
+    public static final String MISC_REPAIR_OFF = "ttinkerer:textures/misc/repairOff.png";
+    public static final String MODEL_RELAY_TEXTURE = "ttinkerer:textures/model/relay.png";
+    public static final String MODEL_MAGNET_N = "ttinkerer:textures/model/magnetN.png";
+    public static final String MODEL_MAGNET_S = "ttinkerer:textures/model/magnetS.png";
+    public static final String MODEL_MOB_MAGNET_N = "ttinkerer:textures/model/mobMagnetN.png";
+    public static final String MODEL_MOB_MAGNET_S = "ttinkerer:textures/model/mobMagnetS.png";
+    public static final String MODEL_REVEALING_HELM = "ttinkerer:textures/model/revealing.png";
+    public static final String MODEL_REPAIRER = "ttinkerer:textures/model/repairer.png";
+    public static final String MODEL_CAP_ICHOR = "ttinkerer:textures/model/capIchor.png";
+    public static final String MODEL_ROD_ICHORCLOTH = "ttinkerer:textures/model/rodIchorcloth.png";
+    public static final String MODEL_ARMOR_ICHOR_1 = "ttinkerer:textures/model/ichor1.png";
+    public static final String MODEL_ARMOR_ICHOR_2 = "ttinkerer:textures/model/ichor2.png";
+    public static final String MODEL_ARMOR_ICHOR_GEM_1 = "ttinkerer:textures/model/ichorGem1.png";
+    public static final String MODEL_ARMOR_ICHOR_GEM_2 = "ttinkerer:textures/model/ichorGem2.png";
+    public static final String ENCHANT_PROTECTION = "ttinkerer:textures/enchants/protection.png";
+    public static final String ENCHANT_FIRE_PROTECTION = "ttinkerer:textures/enchants/fireProtection.png";
+    public static final String ENCHANT_FEATHER_FALLING = "ttinkerer:textures/enchants/featherFalling.png";
+    public static final String ENCHANT_BLAST_PROTECTION = "ttinkerer:textures/enchants/blastProtection.png";
+    public static final String ENCHANT_PROJECTILE_PROTECTION = "ttinkerer:textures/enchants/projectileProtection.png";
+    public static final String ENCHANT_RESPIRATION = "ttinkerer:textures/enchants/respiration.png";
+    public static final String ENCHANT_AQUA_AFFINITY = "ttinkerer:textures/enchants/aquaAffinity.png";
+    public static final String ENCHANT_THORNS = "ttinkerer:textures/enchants/thorns.png";
+    public static final String ENCHANT_SHARPNESS = "ttinkerer:textures/enchants/sharpness.png";
+    public static final String ENCHANT_SMITE = "ttinkerer:textures/enchants/smite.png";
+    public static final String ENCHANT_BANE_OF_ARTHROPODS = "ttinkerer:textures/enchants/baneOfAwfulTurds.png";
+    public static final String ENCHANT_KNOCKBACK = "ttinkerer:textures/enchants/knockback.png";
+    public static final String ENCHANT_FIRE_ASPECT = "ttinkerer:textures/enchants/fireAspect.png";
+    public static final String ENCHANT_LOOTING = "ttinkerer:textures/enchants/looting.png";
+    public static final String ENCHANT_EFFICIENCY = "ttinkerer:textures/enchants/efficiency.png";
+    public static final String ENCHANT_SILK_TOUCH = "ttinkerer:textures/enchants/silkTouch.png";
+    public static final String ENCHANT_UNBREAKING = "ttinkerer:textures/enchants/unbreaking.png";
+    public static final String ENCHANT_FORTUNE = "ttinkerer:textures/enchants/fortune.png";
+    public static final String ENCHANT_POWER = "ttinkerer:textures/enchants/power.png";
+    public static final String ENCHANT_PUNCH = "ttinkerer:textures/enchants/punch.png";
+    public static final String ENCHANT_FLAME = "ttinkerer:textures/enchants/flame.png";
+    public static final String ENCHANT_INFINITY = "ttinkerer:textures/enchants/infinity.png";
+    public static final String ENCHANT_LUCK_OF_THE_SEA = "ttinkerer:textures/enchants/luckOfTheSea.png";
+    public static final String ENCHANT_LURE = "ttinkerer:textures/enchants/lure.png";
+    public static final String ENCHANT_POTENCY = "ttinkerer:textures/enchants/potency.png";
+    public static final String ENCHANT_FRUGAL = "ttinkerer:textures/enchants/frugal.png";
+    public static final String ENCHANT_TREASURE = "ttinkerer:textures/enchants/treasure.png";
+    public static final String ENCHANT_HASTE = "ttinkerer:textures/enchants/haste.png";
+    public static final String ENCHANT_REPAIR = "ttinkerer:textures/enchants/repair.png";
+    public static final String ENCHANT_SLOW_FALL = "ttinkerer:textures/enchants/slowFall.png";
+    public static final String ENCHANT_ASCENT_BOOST = "ttinkerer:textures/enchants/ascentBoost.png";
+    public static final String ENCHANT_AUTO_SMELT = "ttinkerer:textures/enchants/autoSmelt.png";
+    public static final String ENCHANT_DESINTEGRATE = "ttinkerer:textures/enchants/desintegrate.png";
+    public static final String ENCHANT_VAMPIRISM = "ttinkerer:textures/enchants/vamprisim.png";
+    public static final String ENCHANT_QUICK_DRAW = "ttinkerer:textures/enchants/quickDraw.png";
+    public static final String ENCHANT_FOCUSED_STRIKE = "ttinkerer:textures/enchants/focusedStrikes.png";
+    public static final String ENCHANT_DISPERSED_STRIKE = "ttinkerer:textures/enchants/dispersedStrikes.png";
+    public static final String ENCHANT_VALIANCE = "ttinkerer:textures/enchants/valiance.png";
+    public static final String ENCHANT_FINAL_STRIKE = "ttinkerer:textures/enchants/finalStrike.png";
+    public static final String ENCHANT_TUNNEL = "ttinkerer:textures/enchants/tunnel.png";
+    public static final String ENCHANT_SHATTER = "ttinkerer:textures/enchants/shatter.png";
+    public static final String ENCHANT_SHOCKWAVE = "ttinkerer:textures/enchants/shockwave.png";
+    public static final String ENCHANT_POUNCE = "ttinkerer:textures/enchants/pounce.png";
+}
+

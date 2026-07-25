@@ -1,0 +1,137 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.entity.Entity
+ *  net.minecraft.entity.player.EntityPlayer
+ *  net.minecraft.item.ItemStack
+ *  net.minecraft.nbt.NBTTagCompound
+ *  net.minecraft.util.MovingObjectPosition
+ *  net.minecraft.world.World
+ */
+package com.emoniph.witchery.infusion;
+
+import com.emoniph.witchery.infusion.InfusedBrewGraveEffect;
+import com.emoniph.witchery.infusion.InfusedBrewSoaringEffect;
+import com.emoniph.witchery.infusion.Infusion;
+import com.emoniph.witchery.util.TimeUtil;
+import java.util.ArrayList;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.world.World;
+
+public abstract class InfusedBrewEffect {
+    public static final ArrayList<InfusedBrewEffect> brewList = new ArrayList();
+    public static final InfusedBrewEffect Soaring = new InfusedBrewSoaringEffect(1, 144000L);
+    public static final InfusedBrewEffect Grave = new InfusedBrewGraveEffect(2, 144000L);
+    public final int id;
+    public final long durationTicks;
+    public final int imageMapX;
+    public final int imageMapY;
+    private static String BREW_TYPE_KEY = "WITCInfusedBrewType";
+    private static String BREW_START_KEY = "WITCInfusedBrewStart";
+    private static String BREW_MINS_LEFT_KEY = "WITCInfusedBrewMinesLeft";
+
+    protected InfusedBrewEffect(int id, long durationMS, int imageX, int imageY) {
+        this.id = id;
+        this.durationTicks = durationMS;
+        this.imageMapX = imageX;
+        this.imageMapY = imageY;
+        while (brewList.size() <= id) {
+            brewList.add(null);
+        }
+        brewList.set(id, this);
+    }
+
+    public void drunk(World world, EntityPlayer player, ItemStack itemstack) {
+        InfusedBrewEffect.setActiveBrew(this, player, true);
+        this.immediateEffect(world, player, itemstack);
+    }
+
+    public abstract void immediateEffect(World var1, EntityPlayer var2, ItemStack var3);
+
+    public abstract void regularEffect(World var1, EntityPlayer var2);
+
+    public boolean tryUseEffect(EntityPlayer player, MovingObjectPosition mop) {
+        return this.isActive(player);
+    }
+
+    public boolean isActive(EntityPlayer player) {
+        return InfusedBrewEffect.getActiveBrew(player) == this;
+    }
+
+    public static InfusedBrewEffect getActiveBrew(EntityPlayer player) {
+        if (player != null) {
+            NBTTagCompound nbtPlayer = Infusion.getNBT((Entity)player);
+            return InfusedBrewEffect.getActiveBrew(nbtPlayer);
+        }
+        return null;
+    }
+
+    public static InfusedBrewEffect getActiveBrew(NBTTagCompound nbtPlayer) {
+        int brewID;
+        if (nbtPlayer != null && (brewID = nbtPlayer.func_74762_e(BREW_TYPE_KEY)) > 0) {
+            return brewList.get(brewID);
+        }
+        return null;
+    }
+
+    public static long getActiveBrewStartTime(NBTTagCompound nbtPlayer) {
+        if (nbtPlayer != null) {
+            long startTime = nbtPlayer.func_74763_f(BREW_START_KEY);
+            return startTime;
+        }
+        return 0L;
+    }
+
+    public static String getMinutesRemaining(World world, NBTTagCompound nbtPlayer, InfusedBrewEffect effect) {
+        if (nbtPlayer != null) {
+            long minsLeft = nbtPlayer.func_74763_f(BREW_MINS_LEFT_KEY);
+            return String.format("%d", minsLeft);
+        }
+        return "";
+    }
+
+    public static void setActiveBrew(InfusedBrewEffect brew, EntityPlayer player, boolean sync) {
+        if (player != null) {
+            NBTTagCompound nbtPlayer = Infusion.getNBT((Entity)player);
+            InfusedBrewEffect.setActiveBrew(player.field_70170_p, player, nbtPlayer, brew, sync);
+        }
+    }
+
+    public static void setActiveBrew(World world, EntityPlayer player, NBTTagCompound nbtPlayer, InfusedBrewEffect brew, boolean sync) {
+        if (nbtPlayer != null && !world.field_72995_K) {
+            nbtPlayer.func_74768_a(BREW_TYPE_KEY, brew.id);
+            nbtPlayer.func_74772_a(BREW_START_KEY, TimeUtil.getServerTimeInTicks());
+            if (sync) {
+                Infusion.syncPlayer(world, player);
+            }
+        }
+    }
+
+    public static void setActiveBrewInfo(NBTTagCompound nbtPlayer, int brewID, long startTime) {
+        nbtPlayer.func_74768_a(BREW_TYPE_KEY, brewID);
+        nbtPlayer.func_74772_a(BREW_MINS_LEFT_KEY, startTime);
+    }
+
+    public static void checkActiveEffects(World world, EntityPlayer player, NBTTagCompound nbtPlayer, boolean sync, long currentTime) {
+        InfusedBrewEffect activeEffect;
+        if (nbtPlayer != null && !world.field_72995_K && (activeEffect = InfusedBrewEffect.getActiveBrew(nbtPlayer)) != null) {
+            long startTime = nbtPlayer.func_74763_f(BREW_START_KEY);
+            if (currentTime > startTime + activeEffect.durationTicks) {
+                nbtPlayer.func_82580_o(BREW_START_KEY);
+                nbtPlayer.func_82580_o(BREW_TYPE_KEY);
+                Infusion.syncPlayer(world, player);
+                return;
+            }
+            activeEffect.regularEffect(world, player);
+            if (sync) {
+                Infusion.syncPlayer(world, player);
+            }
+        }
+    }
+}
+

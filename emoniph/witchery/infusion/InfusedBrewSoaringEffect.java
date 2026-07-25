@@ -1,0 +1,30 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.entity.player.EntityPlayer
+ *  net.minecraft.item.ItemStack
+ *  net.minecraft.world.World
+ */
+package com.emoniph.witchery.infusion;
+
+import com.emoniph.witchery.infusion.InfusedBrewEffect;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+
+public class InfusedBrewSoaringEffect
+extends InfusedBrewEffect {
+    public InfusedBrewSoaringEffect(int id, long durationMS) {
+        super(id, durationMS, 16, 0);
+    }
+
+    @Override
+    public void immediateEffect(World world, EntityPlayer player, ItemStack stack) {
+    }
+
+    @Override
+    public void regularEffect(World world, EntityPlayer player) {
+    }
+}
+

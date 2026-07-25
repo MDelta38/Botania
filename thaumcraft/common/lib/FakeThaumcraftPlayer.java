@@ -1,0 +1,42 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  com.mojang.authlib.GameProfile
+ *  net.minecraft.entity.player.EntityPlayer
+ *  net.minecraft.util.ChunkCoordinates
+ *  net.minecraft.util.IChatComponent
+ *  net.minecraft.world.World
+ */
+package thaumcraft.common.lib;
+
+import com.mojang.authlib.GameProfile;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ChunkCoordinates;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.world.World;
+
+public class FakeThaumcraftPlayer
+extends EntityPlayer {
+    public FakeThaumcraftPlayer(World world, GameProfile name) {
+        super(world, name);
+    }
+
+    public void addChatMessage(String s) {
+    }
+
+    public boolean func_70003_b(int i, String s) {
+        return false;
+    }
+
+    public ChunkCoordinates func_82114_b() {
+        return new ChunkCoordinates(0, 0, 0);
+    }
+
+    public void openGui(Object mod, int modGuiId, World world, int x, int y, int z) {
+    }
+
+    public void func_145747_a(IChatComponent var1) {
+    }
+}
+

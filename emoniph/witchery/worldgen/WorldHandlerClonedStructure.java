@@ -1,0 +1,77 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.world.World
+ */
+package com.emoniph.witchery.worldgen;
+
+import com.emoniph.witchery.util.Config;
+import com.emoniph.witchery.worldgen.ComponentClonedStructure;
+import com.emoniph.witchery.worldgen.IWorldGenHandler;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Random;
+import net.minecraft.world.World;
+
+public class WorldHandlerClonedStructure
+implements IWorldGenHandler {
+    private final double chance;
+    private final int range;
+    private final int width;
+    private final int height;
+    private final int depth;
+    Class<? extends ComponentClonedStructure> clazz;
+
+    public WorldHandlerClonedStructure(Class<? extends ComponentClonedStructure> clazz, double chance, int range, int width, int height, int depth) {
+        this.clazz = clazz;
+        this.chance = chance;
+        this.range = range;
+        this.width = width;
+        this.height = height;
+        this.depth = depth;
+    }
+
+    @Override
+    public int getExtentX() {
+        return this.width;
+    }
+
+    @Override
+    public int getExtentZ() {
+        return this.depth;
+    }
+
+    @Override
+    public int getRange() {
+        return this.range;
+    }
+
+    @Override
+    public boolean generate(World world, Random random, int x, int z) {
+        if (Config.instance().generateGoblinHuts && random.nextDouble() < this.chance) {
+            int direction = random.nextInt(4);
+            try {
+                Constructor<? extends ComponentClonedStructure> ctor = this.clazz.getConstructor(Integer.TYPE, Random.class, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE);
+                ComponentClonedStructure component = ctor.newInstance(direction, random, x, z, this.width, this.height, this.depth);
+                component.addComponentParts(world, random);
+            }
+            catch (NoSuchMethodException ex) {
+            }
+            catch (InvocationTargetException ex) {
+            }
+            catch (InstantiationException ex) {
+            }
+            catch (IllegalAccessException ex) {
+                // empty catch block
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void initiate() {
+    }
+}
+

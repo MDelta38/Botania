@@ -1,0 +1,35 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  net.minecraft.block.Block
+ *  net.minecraft.world.World
+ */
+package com.emoniph.witchery.util;
+
+import net.minecraft.block.Block;
+import net.minecraft.world.World;
+
+public class CircleUtil {
+    private CircleUtil() {
+    }
+
+    public static boolean isSmallCircle(World world, int x, int y, int z, Block block) {
+        int[][] circle;
+        for (int[] coord : circle = new int[][]{{x, z - 2}, {x + 1, z - 2}, {x + 2, z - 1}, {x + 2, z}, {x + 2, z + 1}, {x + 1, z + 2}, {x, z + 2}, {x - 1, z + 2}, {x - 2, z + 1}, {x - 2, z}, {x - 2, z - 1}, {x - 1, z - 2}}) {
+            if (world.func_147439_a(coord[0], y, coord[1]) == block) continue;
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean isMediumCircle(World world, int x, int y, int z, Block block) {
+        int[][] circle;
+        for (int[] coord : circle = new int[][]{{x, z - 4}, {x + 1, z - 4}, {x + 2, z - 4}, {x + 3, z - 3}, {x + 4, z - 2}, {x + 4, z - 1}, {x + 4, z}, {x + 4, z + 1}, {x + 4, z + 2}, {x + 3, z + 3}, {x + 2, z + 4}, {x + 1, z + 4}, {x, z + 4}, {x - 1, z + 4}, {x - 2, z + 4}, {x - 3, z + 3}, {x - 4, z + 2}, {x - 4, z + 1}, {x - 4, z}, {x - 4, z - 1}, {x - 4, z - 2}, {x - 3, z - 3}, {x - 2, z - 4}, {x - 1, z - 4}}) {
+            if (world.func_147439_a(coord[0], y, coord[1]) == block) continue;
+            return false;
+        }
+        return true;
+    }
+}
+
